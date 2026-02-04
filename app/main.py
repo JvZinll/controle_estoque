@@ -1,3 +1,5 @@
+from app.models.product import Product  # noqa: F401
+from app.schemas.product import ProductCreate, ProductOut
 from typing import List 
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -48,3 +50,32 @@ def create_supplier(payload: SupplierCreate, db: Session = Depends(get_db)):
 def list_suppliers(db: Session = Depends(get_db)):
     suppliers = db.query(Supplier).all()
     return suppliers
+
+@app.post("/products", status_code=status.HTTP_201_CREATED)
+def create_product(payload: ProductCreate, db: Session = Depends(get_db)):
+    if payload.barcode:
+        existing = db.query(Product).filter(Product.barcode == payload.barcode).first()
+        if existing:
+            raise HTTPException(
+                status_code=400,
+                detail="Produto com este código de barras já está cadastrado!"
+            )
+
+    product = Product(
+        name=payload.name,
+        barcode=payload.barcode,
+        description=payload.description,
+        quantity=payload.quantity,
+        category=payload.category,
+        expiration_date=payload.expiration_date,
+        image_url=payload.image_url,
+    )
+    db.add(product)
+    db.commit()
+    db.refresh(product)
+
+    return {"message": "Produto cadastrado com sucesso!", "id": product.id}
+
+@app.get("/products", response_model=List[ProductOut])
+def list_products(db: Session = Depends(get_db)):
+    return db.query(Product).order_by(Product.id.desc()).all()
