@@ -11,4 +11,4 @@ class Supplier(Base):
     phone = Column(String, nullable=False)
     email = Column(String, nullable=False)
     main_contact = Column(String, nullable=False)
-    notes = Column(String, nullable=True)   
+    notes = Column(String, nullable=True)           
