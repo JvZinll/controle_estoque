@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Controle de Estoque</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      color: #333;
+    }
+
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 20px 40px;
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    nav {
+      display: flex;
+      gap: 10px;
+      padding: 16px 40px;
+      background: #34495e;
+    }
+
+    nav button {
+      background: transparent;
+      border: 2px solid white;
+      color: white;
+      padding: 8px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    nav button:hover, nav button.active {
+      background: white;
+      color: #34495e;
+    }
+
+    .container { padding: 30px 40px; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    h2 { margin-bottom: 20px; color: #2c3e50; }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    input:focus { border-color: #2c3e50; }
+
+    .btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    .btn-primary { background: #2c3e50; color: white; }
+    .btn-primary:hover { background: #1a252f; }
+    .btn-danger { background: #e74c3c; color: white; }
+    .btn-danger:hover { background: #c0392b; }
+    .btn-warning { background: #f39c12; color: white; }
+    .btn-warning:hover { background: #d68910; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th {
+      background: #2c3e50;
+      color: white;
+      padding: 12px 14px;
+      text-align: left;
+    }
+
+    td { padding: 10px 14px; border-bottom: 1px solid #eee; }
+    tr:hover td { background: #f9f9f9; }
+
+    .msg {
+      padding: 10px 16px;
+      border-radius: 6px;
+      margin-top: 12px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .msg.success { background: #d4edda; color: #155724; display: block; }
+    .msg.error { background: #f8d7da; color: #721c24; display: block; }
+
+    label { font-size: 13px; color: #666; margin-bottom: 4px; display: block; }
+  </style>
+</head>
+<body>
+
+<header>📦 Controle de Estoque</header>
+
+<nav>
+  <button class="active" onclick="showSection('suppliers')">Fornecedores</button>
+  <button onclick="showSection('products')">Produtos</button>
+</nav>
+
+<div class="container">
+
+  <!-- FORNECEDORES -->
+  <div id="suppliers" class="section active">
+    <h2>Fornecedores</h2>
+
+    <div class="card">
+      <h3 style="margin-bottom:16px">Cadastrar Fornecedor</h3>
+      <div class="form-grid">
+        <div><label>Razão Social</label><input id="s_company_name" placeholder="Ex: Empresa XYZ" /></div>
+        <div><label>CNPJ</label><input id="s_cnpj" placeholder="Ex: 12.345.678/0001-99" /></div>
+        <div><label>Endereço</label><input id="s_address" placeholder="Ex: Rua das Flores, 123" /></div>
+        <div><label>Telefone</label><input id="s_phone" placeholder="Ex: 86999999999" /></div>
+        <div><label>Email</label><input id="s_email" placeholder="Ex: contato@empresa.com" /></div>
+        <div><label>Contato Principal</label><input id="s_contact" placeholder="Ex: João Silva" /></div>
+      </div>
+      <button class="btn btn-primary" onclick="createSupplier()">Cadastrar</button>
+      <div id="s_msg" class="msg"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:16px">Fornecedores Cadastrados</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Razão Social</th><th>CNPJ</th>
+            <th>Telefone</th><th>Email</th><th>Contato</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="suppliers_table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PRODUTOS -->
+  <div id="products" class="section">
+    <h2>Produtos</h2>
+
+    <div class="card">
+      <h3 style="margin-bottom:16px">Cadastrar Produto</h3>
+      <div class="form-grid">
+        <div><label>Nome</label><input id="p_name" placeholder="Ex: Arroz 5kg" /></div>
+        <div><label>Código de Barras</label><input id="p_barcode" placeholder="Ex: 7891234560001" /></div>
+        <div><label>Descrição</label><input id="p_description" placeholder="Ex: Arroz branco tipo 1" /></div>
+        <div><label>Quantidade</label><input id="p_quantity" type="number" placeholder="Ex: 100" /></div>
+        <div><label>Categoria</label><input id="p_category" placeholder="Ex: Alimentos" /></div>
+        <div><label>Validade</label><input id="p_expiration" type="date" /></div>
+      </div>
+      <button class="btn btn-primary" onclick="createProduct()">Cadastrar</button>
+      <div id="p_msg" class="msg"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:16px">Produtos Cadastrados</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Nome</th><th>Código de Barras</th>
+            <th>Quantidade</th><th>Categoria</th><th>Validade</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="products_table"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const API = "http://127.0.0.1:8000";
+
+  function showSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(name).classList.add('active');
+    event.target.classList.add('active');
+    if (name === 'suppliers') loadSuppliers();
+    if (name === 'products') loadProducts();
+  }
+
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = `msg ${type}`;
+    setTimeout(() => el.className = 'msg', 3000);
+  }
+
+  // FORNECEDORES
+  async function createSupplier() {
+    const payload = {
+      company_name: document.getElementById('s_company_name').value,
+      cnpj: document.getElementById('s_cnpj').value,
+      address: document.getElementById('s_address').value,
+      phone: document.getElementById('s_phone').value,
+      email: document.getElementById('s_email').value,
+      main_contact: document.getElementById('s_contact').value,
+    };
+    const res = await fetch(`${API}/suppliers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showMsg('s_msg', data.message, 'success');
+      document.querySelectorAll('#suppliers input').forEach(i => i.value = '');
+      loadSuppliers();
+    } else {
+      showMsg('s_msg', data.detail, 'error');
+    }
+  }
+
+  async function loadSuppliers() {
+    const res = await fetch(`${API}/suppliers`);
+    const data = await res.json();
+    const tbody = document.getElementById('suppliers_table');
+    tbody.innerHTML = data.map(s => `
+      <tr>
+        <td>${s.id}</td>
+        <td>${s.company_name}</td>
+        <td>${s.cnpj}</td>
+        <td>${s.phone}</td>
+        <td>${s.email}</td>
+        <td>${s.main_contact}</td>
+        <td>
+          <button class="btn btn-danger" onclick="deleteSupplier(${s.id})">Deletar</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function deleteSupplier(id) {
+    if (!confirm('Deseja deletar este fornecedor?')) return;
+    const res = await fetch(`${API}/suppliers/${id}`, { method: 'DELETE' });
+    if (res.ok) loadSuppliers();
+  }
+
+  // PRODUTOS
+  async function createProduct() {
+    const payload = {
+      name: document.getElementById('p_name').value,
+      barcode: document.getElementById('p_barcode').value || null,
+      description: document.getElementById('p_description').value,
+      quantity: parseInt(document.getElementById('p_quantity').value) || 0,
+      category: document.getElementById('p_category').value,
+      expiration_date: document.getElementById('p_expiration').value || null,
+    };
+    const res = await fetch(`${API}/products`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showMsg('p_msg', data.message, 'success');
+      document.querySelectorAll('#products input').forEach(i => i.value = '');
+      loadProducts();
+    } else {
+      showMsg('p_msg', data.detail, 'error');
+    }
+  }
+
+  async function loadProducts() {
+    const res = await fetch(`${API}/products`);
+    const data = await res.json();
+    const tbody = document.getElementById('products_table');
+    tbody.innerHTML = data.map(p => `
+      <tr>
+        <td>${p.id}</td>
+        <td>${p.name}</td>
+        <td>${p.barcode || '—'}</td>
+        <td>${p.quantity}</td>
+        <td>${p.category}</td>
+        <td>${p.expiration_date || '—'}</td>
+        <td>
+          <button class="btn btn-danger" onclick="deleteProduct(${p.id})">Deletar</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm('Deseja deletar este produto?')) return;
+    const res = await fetch(`${API}/products/${id}`, { method: 'DELETE' });
+    if (res.ok) loadProducts();
+  }
+
+  // Carrega ao iniciar
+  loadSuppliers();
+</script>
+
+</body>
+</html>
